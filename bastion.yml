@@ -20,10 +20,6 @@ Parameters:
     ConstraintDescription: Must be an existing keypair
 
 Resources:
-  # Security group, expose port 22 on computer ip
-  # Launch instance in public subnet
-  # Assign elastic IP
-  # Allow instances to accept traffic from bastion host (upadte web server sec group)
   BastionSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
