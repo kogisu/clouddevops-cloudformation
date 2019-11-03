@@ -1,0 +1,67 @@
+Description: >
+  Bastion host for enabling ssh to private server
+  
+Parameters: 
+  EnvironmentName:
+    Type: String
+    Default: UdacityProject
+  AMI:
+    Description: 'Machine Image to be used. Default is set to an AMI
+    in the us-west-2 region.'
+    Type: String
+    Default: ami-06d51e91cea0dac8d
+  InstanceType:
+    Type: String
+    Default: t2.micro
+  KeyName:
+    Description: 'Key name for existing ssh key pair'
+    Type: String
+    Default: uda-key
+    ConstraintDescription: Must be an existing keypair
+
+Resources:
+  # Security group, expose port 22 on computer ip
+  # Launch instance in public subnet
+  # Assign elastic IP
+  # Allow instances to accept traffic from bastion host (upadte web server sec group)
+  BastionSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Bastion host security group
+      VpcId: 
+        Fn::ImportValue:
+          !Sub ${EnvironmentName}-VPCID
+      SecurityGroupIngress:
+        - IpProtocol: tcp 
+          CidrIp: 0.0.0.0/0
+          FromPort: 22
+          ToPort: 22
+      SecurityGroupEgress:
+        - IpProtocol: tcp 
+          CidrIp: 0.0.0.0/0
+          FromPort: 22
+          ToPort: 22
+
+  BastionInstance:
+    Type: AWS::EC2::Instance
+    Properties:
+      ImageId: !Ref AMI
+      InstanceType: !Ref InstanceType
+      KeyName: !Ref KeyName
+      SecurityGroupIds:
+        - !Ref BastionSecurityGroup
+      SubnetId: 
+        Fn::ImportValue:
+           !Sub ${EnvironmentName}-PUB1-SN
+
+Outputs:
+  BastionSecurityGroup:
+    Description: Bastion Security Group
+    Value: 
+      !GetAtt
+          - BastionSecurityGroup
+          - GroupId
+    Export:
+      Name: !Sub ${EnvironmentName}-Bastion-Security-Group
+
+

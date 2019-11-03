@@ -18,6 +18,11 @@ Parameters:
     Type: String
     Default: t3.medium
     ConstraintDescription: Must be a valid EC2 instance type greater than 4GB RAM.
+  KeyName:
+    Description: 'Key name for existing ssh key pair'
+    Type: String
+    Default: uda-key
+    ConstraintDescription: Must be an existing keypair
 
 Resources:
   LBSecGroup:
@@ -55,6 +60,12 @@ Resources:
         FromPort: 80
         ToPort: 80
         CidrIp: 0.0.0.0/0
+      - IpProtocol: tcp
+        FromPort: 22
+        ToPort: 22
+        SourceSecurityGroupId: 
+          Fn::ImportValue: 
+            !Sub ${EnvironmentName}-Bastion-Security-Group
   
   WebAppLB:
     Type: AWS::ElasticLoadBalancingV2::LoadBalancer
@@ -137,6 +148,7 @@ Resources:
     Properties:
       ImageId: !Ref AMI
       InstanceType: !Ref InstanceType
+      KeyName: !Ref KeyName
       IamInstanceProfile: !Ref AppProfileRoles
       SecurityGroups:
         - Ref: WebAppSecGroup
